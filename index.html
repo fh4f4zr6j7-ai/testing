@@ -1,0 +1,2103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Charlie & The Chocolate Factory - ESL Game</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['-apple-system', 'BlinkMacSystemFont', '"Fredoka"', '"SF Pro Text"', 'Inter', 'sans-serif'],
+                        fun: ['"Fredoka"', 'cursive', 'sans-serif']
+                    },
+                    colors: {
+                        glass: 'rgba(45, 17, 44, 0.65)',
+                        glassGold: 'rgba(255, 246, 214, 0.85)',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Three.js & Confetti -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <style>
+        body {
+            background: linear-gradient(135deg, #1b091c 0%, #3b0764 50%, #170518 100%);
+            background-attachment: fixed;
+            -webkit-font-smoothing: antialiased;
+            color: white;
+            overflow-x: hidden;
+            touch-action: manipulation;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            letter-spacing: -0.01em;
+            font-family: 'Fredoka', 'Inter', sans-serif;
+        }
+
+        .glass-panel {
+            background: rgba(45, 17, 44, 0.65);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+
+        .glass-gold {
+            background: linear-gradient(135deg, rgba(255, 246, 214, 0.85), rgba(255, 217, 125, 0.85));
+            border: 1px solid #FFD700;
+            color: #1b091c;
+            box-shadow: 0 10px 25px rgba(255, 215, 0, 0.3);
+        }
+
+        /* Kid-Friendly Question Sheet Styles */
+        .wonka-sheet {
+            background: linear-gradient(135deg, #ffffff 0%, #fffdf0 100%);
+            border: 3px solid #facc15;
+            box-shadow: 0 12px 28px -5px rgba(0, 0, 0, 0.25), inset 0 0 15px rgba(254, 240, 138, 0.3);
+            border-radius: 1.25rem;
+            position: relative;
+        }
+
+        .wonka-input {
+            background: #ffffff;
+            border: 2.5px solid #a855f7;
+            border-radius: 0.75rem;
+            padding: 0.35rem 0.75rem;
+            font-weight: 700;
+            color: #581c87;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.06);
+            transition: all 0.2s ease;
+        }
+
+        .wonka-input:focus {
+            border-color: #eab308;
+            box-shadow: 0 0 0 4px rgba(234, 179, 8, 0.25), inset 0 2px 4px rgba(0, 0, 0, 0.04);
+            outline: none;
+            transform: scale(1.02);
+        }
+
+        .wonka-select {
+            background: #ffffff;
+            border: 2.5px solid #a855f7;
+            border-radius: 0.75rem;
+            padding: 0.4rem 0.8rem;
+            font-weight: 700;
+            color: #581c87;
+            cursor: pointer;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.06);
+            transition: all 0.2s ease;
+        }
+
+        .wonka-select:focus {
+            border-color: #eab308;
+            box-shadow: 0 0 0 4px rgba(234, 179, 8, 0.25);
+            outline: none;
+        }
+
+        .candy-badge {
+            background: linear-gradient(135deg, #a855f7, #7e22ce);
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-weight: 700;
+            box-shadow: 0 3px 6px rgba(126, 34, 206, 0.3);
+        }
+
+        .candy-btn {
+            box-shadow: 0 6px 0 0 rgba(0, 0, 0, 0.2);
+            transition: all 0.15s ease;
+        }
+
+        .candy-btn:active:not(:disabled) {
+            transform: translateY(3px);
+            box-shadow: 0 3px 0 0 rgba(0, 0, 0, 0.2);
+        }
+        
+        .candy-btn:disabled {
+            cursor: not-allowed;
+            transform: none !important;
+            box-shadow: none !important;
+        }
+
+        .anim-float:hover {
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+
+        @keyframes pulse-green {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7); }
+            50% { box-shadow: 0 0 0 10px rgba(34, 197, 94, 0); }
+        }
+
+        .correct-pulse {
+            animation: pulse-green 1.5s infinite;
+            border-color: #22c55e !important;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: rgba(0,0,0,0.1); }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.3); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.5); }
+
+        /* Prevent Selection but allow in inputs */
+        .no-select { user-select: none; -webkit-user-select: none; }
+        input, textarea, select { user-select: auto; -webkit-user-select: auto; color: #1b091c; }
+        
+        .word-grid {
+            display: grid;
+            grid-template-columns: repeat(10, 1fr);
+            gap: 5px;
+            max-width: 420px;
+            margin: 0 auto;
+        }
+
+        .grid-cell {
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 1.15rem;
+            border-radius: 10px;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.05));
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            cursor: pointer;
+            transition: all 0.2s;
+            touch-action: none;
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .grid-cell.selected {
+            background: linear-gradient(135deg, #facc15, #eab308);
+            color: #1b091c;
+            border-color: #fef08a;
+            transform: scale(1.08) rotate(-3deg);
+            box-shadow: 0 6px 12px rgba(234, 179, 8, 0.4);
+        }
+
+        .grid-cell.found {
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+            color: white;
+            border-color: #86efac;
+            transform: scale(1) rotate(0deg);
+            cursor: default;
+            box-shadow: 0 4px 10px rgba(34, 197, 94, 0.3);
+        }
+
+        .drag-item {
+            cursor: grab;
+        }
+        .drag-item:active {
+            cursor: grabbing;
+        }
+    </style>
+</head>
+<body class="no-select min-h-screen flex flex-col font-sans">
+
+    <!-- 3D Background Canvas -->
+    <div id="three-canvas" class="fixed inset-0 z-0 pointer-events-none opacity-40"></div>
+
+    <!-- Main Content Wrapper -->
+    <div class="relative z-10 flex-grow flex flex-col">
+        
+        <!-- Header -->
+        <header class="glass-panel w-full p-4 flex justify-between items-center sticky top-0 z-40 hidden" id="main-header">
+            <div class="flex items-center gap-4">
+                <div class="text-3xl" id="ui-avatar">🍫</div>
+                <div>
+                    <h2 class="font-bold text-lg leading-tight" id="ui-name">Student Name</h2>
+                    <p class="text-xs text-purple-200">Class <span id="ui-class"></span> (<span id="ui-classno"></span>)</p>
+                </div>
+            </div>
+            
+            <div class="flex gap-2">
+                <div id="ui-prev-points-container" class="flex flex-col items-center px-4 border-l border-white/20 hidden">
+                    <div class="text-2xl font-black text-yellow-400 drop-shadow-md flex items-baseline gap-1">
+                        <span id="ui-prev-points">0</span>
+                        <span class="text-sm font-bold opacity-80">/ 39</span>
+                    </div>
+                    <div class="text-[10px] uppercase tracking-wider text-purple-200">Highest Attempt</div>
+                </div>
+                <div class="flex flex-col items-center px-4 border-l border-white/20">
+                    <div class="text-2xl font-black text-green-400 drop-shadow-md flex items-baseline gap-1">
+                        <span id="ui-total-score">0</span>
+                        <span class="text-sm font-bold opacity-80">/ 39</span>
+                    </div>
+                    <div class="text-[10px] uppercase tracking-wider text-purple-200">Current Score</div>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-4">
+                <div class="hidden md:flex items-center gap-2 bg-white/10 px-3 py-1.5 rounded-full">
+                    <i class="fa-solid fa-music text-xs text-white"></i>
+                    <input type="range" id="bgm-volume" min="0" max="1" step="0.05" value="0.3" oninput="changeVolume(this.value)" class="w-16 accent-yellow-400 cursor-pointer">
+                </div>
+                <button id="btn-mute" class="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition" onclick="toggleMute()">
+                    <i class="fa-solid fa-volume-high"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- Dashboard -->
+        <main class="flex-grow p-4 md:p-8 max-w-7xl mx-auto w-full hidden" id="dashboard">
+            <h1 class="text-3xl md:text-5xl font-extrabold text-center mb-8 drop-shadow-lg">
+                <span class="text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 to-yellow-600">Charlie & The Chocolate Factory</span>
+            </h1>
+
+            <!-- Progress Bar -->
+            <div class="max-w-3xl mx-auto mb-8 glass-panel p-5 rounded-2xl border border-yellow-400/30">
+                <div class="flex justify-between items-end mb-2 px-1">
+                    <span class="text-sm font-bold text-yellow-300 uppercase tracking-wider">Mission Progress</span>
+                    <span id="ui-progress-text" class="text-white font-black text-lg drop-shadow-md">0 / 6 Completed</span>
+                </div>
+                <div class="w-full bg-black/40 rounded-full h-5 shadow-inner overflow-hidden border border-white/10">
+                    <div id="ui-progress-bar" class="bg-gradient-to-r from-emerald-400 to-green-500 h-full rounded-full transition-all duration-700 ease-out w-0 relative">
+                        <!-- Candy Stripe overlay -->
+                        <div class="absolute inset-0 w-full h-full" style="background-image: linear-gradient(45deg, rgba(255,255,255,.15) 25%, transparent 25%, transparent 50%, rgba(255,255,255,.15) 50%, rgba(255,255,255,.15) 75%, transparent 75%, transparent); background-size: 1rem 1rem;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Flex container for Missions and Leaderboard -->
+            <div class="flex flex-col lg:flex-row gap-6">
+                <!-- Mission Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 flex-grow" id="mission-grid">
+                    <!-- Cards generated via JS -->
+                </div>
+
+                <!-- Top 3 Leaderboard Sidebar -->
+                <div class="lg:w-72 shrink-0">
+                    <div class="glass-panel rounded-3xl p-6 h-full flex flex-col border-2 border-yellow-400/30 shadow-2xl">
+                        <div class="text-center mb-5 pb-4 border-b border-white/10">
+                            <i class="fa-solid fa-trophy text-4xl text-yellow-400 mb-2 drop-shadow-[0_0_10px_rgba(250,204,21,0.5)]"></i>
+                            <h2 class="font-black text-xl text-white tracking-wide uppercase">Top 3 Students</h2>
+                        </div>
+                        <div id="leaderboard-list" class="flex flex-col gap-3 flex-grow">Loading...</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Final Submit Block -->
+            <div class="mt-10 flex justify-center pb-10">
+                <button id="final-submit-btn" onclick="submitToTeacher()" class="candy-btn px-10 py-5 bg-gradient-to-r from-gray-500 to-gray-600 text-white font-black text-2xl rounded-2xl shadow-xl transition transform opacity-70 cursor-not-allowed" disabled>
+                    <i class="fa-solid fa-lock mr-2"></i> Complete 6 Missions to Submit
+                </button>
+            </div>
+        </main>
+
+    </div>
+
+    <!-- Registration Modal -->
+    <div id="modal-register" class="fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-blur-md bg-black/40">
+        <div class="glass-gold rounded-3xl p-8 w-full max-w-md transform transition-all shadow-2xl">
+            <div class="text-center mb-6">
+                <i class="fa-solid fa-ticket text-5xl text-purple-900 mb-2 drop-shadow-md"></i>
+                <h2 class="text-2xl font-bold text-black">Welcome to the Factory</h2>
+                <p class="text-gray-800 text-sm mt-1">Please select your details to begin.</p>
+            </div>
+            
+            <div class="space-y-4 relative">
+                
+                <!-- Loading Overlay -->
+                <div id="reg-loading" class="absolute inset-0 bg-white/50 backdrop-blur-sm z-10 flex flex-col items-center justify-center rounded-xl">
+                    <i class="fa-solid fa-spinner fa-spin text-4xl text-purple-700 mb-2"></i>
+                    <p class="text-purple-900 font-bold text-sm">Connecting to Database...</p>
+                </div>
+
+                <div class="flex gap-4">
+                    <div class="flex-1">
+                        <label class="block text-xs font-semibold uppercase text-gray-800 mb-1">Class</label>
+                        <select id="reg-class" onchange="updateClassNoList()" class="wonka-select w-full bg-black/5 text-black">
+                            <option value="">-- Class --</option>
+                        </select>
+                    </div>
+                    <div class="flex-1">
+                        <label class="block text-xs font-semibold uppercase text-gray-800 mb-1">Class No.</label>
+                        <select id="reg-classno" onchange="updateNameList()" class="wonka-select w-full bg-black/5 text-black" disabled>
+                            <option value="">-- No. --</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold uppercase text-gray-800 mb-1">Student Name</label>
+                    <select id="reg-name" class="wonka-select w-full bg-black/5 text-black" disabled>
+                        <option value="">-- Select Name --</option>
+                    </select>
+                </div>
+                
+                <div>
+                    <label class="block text-xs font-semibold uppercase text-gray-800 mb-2">Choose Avatar</label>
+                    <div class="grid grid-cols-3 sm:grid-cols-6 gap-2" id="avatar-picker">
+                        <button class="avatar-btn bg-black/5 rounded-xl py-2 flex flex-col items-center justify-center gap-1 border border-transparent hover:bg-black/10 focus:border-purple-600 focus:bg-purple-600/20 active" data-avatar="🍫">
+                            <span class="text-2xl pointer-events-none">🍫</span>
+                            <span class="text-[10px] font-bold text-gray-800 pointer-events-none">Charlie</span>
+                        </button>
+                        <button class="avatar-btn bg-black/5 rounded-xl py-2 flex flex-col items-center justify-center gap-1 border border-transparent hover:bg-black/10 focus:border-purple-600 focus:bg-purple-600/20" data-avatar="🎩">
+                            <span class="text-2xl pointer-events-none">🎩</span>
+                            <span class="text-[10px] font-bold text-gray-800 pointer-events-none">Wonka</span>
+                        </button>
+                        <button class="avatar-btn bg-black/5 rounded-xl py-2 flex flex-col items-center justify-center gap-1 border border-transparent hover:bg-black/10 focus:border-purple-600 focus:bg-purple-600/20" data-avatar="👑">
+                            <span class="text-2xl pointer-events-none">👑</span>
+                            <span class="text-[10px] font-bold text-gray-800 pointer-events-none">Veruca</span>
+                        </button>
+                        <button class="avatar-btn bg-black/5 rounded-xl py-2 flex flex-col items-center justify-center gap-1 border border-transparent hover:bg-black/10 focus:border-purple-600 focus:bg-purple-600/20" data-avatar="🍬">
+                            <span class="text-2xl pointer-events-none">🍬</span>
+                            <span class="text-[10px] font-bold text-gray-800 pointer-events-none">Violet</span>
+                        </button>
+                        <button class="avatar-btn bg-black/5 rounded-xl py-2 flex flex-col items-center justify-center gap-1 border border-transparent hover:bg-black/10 focus:border-purple-600 focus:bg-purple-600/20" data-avatar="🍩">
+                            <span class="text-2xl pointer-events-none">🍩</span>
+                            <span class="text-[10px] font-bold text-gray-800 pointer-events-none">Augustus</span>
+                        </button>
+                        <button class="avatar-btn bg-black/5 rounded-xl py-2 flex flex-col items-center justify-center gap-1 border border-transparent hover:bg-black/10 focus:border-purple-600 focus:bg-purple-600/20" data-avatar="📺">
+                            <span class="text-2xl pointer-events-none">📺</span>
+                            <span class="text-[10px] font-bold text-gray-800 pointer-events-none">Mike</span>
+                        </button>
+                    </div>
+                </div>
+
+                <button id="btn-enter-factory" onclick="startGame()" class="w-full bg-gradient-to-r from-purple-800 to-purple-900 text-white font-bold text-lg rounded-xl py-3 mt-4 hover:shadow-lg hover:shadow-purple-900/30 transition transform hover:-translate-y-1 disabled:opacity-50" disabled>
+                    Enter Factory
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Fullscreen Loading Block -->
+    <div id="modal-submitting" class="fixed inset-0 z-[70] flex items-center justify-center p-4 backdrop-blur-md bg-black/80 hidden">
+        <div class="text-center">
+            <i class="fa-solid fa-cookie-bite fa-spin text-6xl text-yellow-400 mb-4 drop-shadow-[0_0_15px_rgba(250,204,21,0.8)]"></i>
+            <h2 class="text-3xl font-black text-white mb-2">Saving to Teacher...</h2>
+            <p class="text-purple-200">Please wait, packing your answers into a chocolate box!</p>
+        </div>
+    </div>
+
+    <!-- Mission Modal Template -->
+    <div id="modal-mission" class="fixed inset-0 z-50 flex items-center justify-center p-2 md:p-6 backdrop-blur-md bg-black/60 hidden">
+        <div class="glass-panel rounded-3xl w-full max-w-4xl h-full max-h-[90vh] flex flex-col shadow-2xl relative border-2 border-yellow-400/30">
+            <button onclick="closeMission()" class="absolute top-4 right-4 w-10 h-10 bg-white/10 rounded-full flex items-center justify-center hover:bg-white/20 transition z-10">
+                <i class="fa-solid fa-xmark text-xl"></i>
+            </button>
+            
+            <div class="p-6 border-b border-white/10 flex items-center gap-4">
+                <div class="text-4xl" id="mission-icon">🎯</div>
+                <div>
+                    <div id="mission-num" class="text-yellow-400 text-xs font-bold uppercase tracking-widest mb-1">Mission</div>
+                    <h2 class="text-2xl font-bold" id="mission-title">Mission Title</h2>
+                    <p class="text-purple-200 text-sm" id="mission-desc">Description</p>
+                </div>
+            </div>
+
+            <div class="p-6 overflow-y-auto flex-grow relative" id="mission-content">
+                <div id="container-m1" class="hidden"></div>
+                <div id="container-m2" class="hidden"></div>
+                <div id="container-m3" class="hidden"></div>
+                <div id="container-m4" class="hidden"></div>
+                <div id="container-m5" class="hidden"></div>
+                <div id="container-m6" class="hidden"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom Alert Modal -->
+    <div id="modal-alert" class="fixed inset-0 z-[60] flex items-center justify-center p-4 backdrop-blur-sm bg-black/40 hidden">
+        <div class="glass-panel rounded-2xl p-6 w-full max-w-sm text-center shadow-2xl border border-white/20">
+            <i class="fa-solid fa-circle-exclamation text-4xl text-yellow-400 mb-3"></i>
+            <p id="alert-msg" class="text-white font-medium mb-5">Message</p>
+            <button onclick="closeAlert()" class="px-6 py-2 bg-yellow-500 text-black font-bold rounded-full shadow hover:bg-yellow-400 active:scale-95 transition">OK</button>
+        </div>
+    </div>
+
+    <script>
+        /* =========================================
+           STATE & CONFIG & GOOGLE API
+           ========================================= */
+        
+        // Google Apps Script Web App URL to retrieve and store records
+        const GAS_URL = "https://script.google.com/macros/s/AKfycbxA9xrDJjKu1SfntkYbhjjU0ZCJww446D9TMgATL-mc6md1SxRzocf7K-hYM5vwUkBe/exec"; 
+
+        let state = {
+            user: { name: '', class: '', classno: '', avatar: '🍫', historicalPoints: 0, attempts: 0 },
+            scores: { m1: 0, m2: 0, m3: 0, m4: 0, m5: 0, m6: 0 },
+            answers: { m1: '', m2: '', m3: '', m4: '', m5: '' },
+            completed: { m1: false, m2: false, m3: false, m4: false, m5: false, m6: false },
+            rendered: { m1: false, m2: false, m3: false, m4: false, m5: false, m6: false },
+            isMuted: false,
+            audioBlob: null
+        };
+
+        const MAX_SCORES = { m1: 9, m2: 6, m3: 10, m4: 10, m5: 3, m6: 1 };
+        let activeMission = null;
+
+        const missionsData = [
+            { id: 'm1', num: 'Mission 1', icon: '🎫', title: 'Golden Tickets & Verbs', desc: 'Find the ticket order and past tenses.', max: 9 },
+            { id: 'm2', num: 'Mission 2', icon: '🔍', title: 'Factory Word Search', desc: 'Find 6 hidden factory words.', max: 6 },
+            { id: 'm3', num: 'Mission 3', icon: '✍️', title: 'Grammar & Story', desc: 'Type the correct grammar words.', max: 10 },
+            { id: 'm4', num: 'Mission 4', icon: '📖', title: 'Story Order & Vocab', desc: 'Organize the events and test vocabulary.', max: 10 },
+            { id: 'm5', num: 'Mission 5', icon: '📝', title: 'My Favorite Character', desc: 'Write about a character you liked.', max: 3 },
+            { id: 'm6', num: 'Mission 6', icon: '🎤', title: 'Song Corner Studio', desc: 'Read or sing the Wonka Song aloud!', max: 1 }
+        ];
+
+        /* =========================================
+           GOOGLE INTEGRATION (LOGIN & LEADERBOARD)
+           ========================================= */
+        let globalUsers = [];
+
+        async function fetchInitialData() {
+            try {
+                if(GAS_URL === "YOUR_GAS_WEB_APP_URL_HERE") {
+                    console.warn("GAS_URL not set! Skipping Google Sheet connection.");
+                    document.getElementById('reg-loading').classList.add('hidden');
+                    return; 
+                }
+                
+                // Added a cache-busting timestamp so the browser ALWAYS gets the newest data!
+                const response = await fetch(`${GAS_URL}?action=getInitialData&t=${Date.now()}`);
+                const data = await response.json();
+                
+                globalUsers = data.users || [];
+                populateClassDropdown();
+                renderLeaderboard(data.leaderboard || []);
+                
+                document.getElementById('reg-loading').classList.add('hidden');
+                document.getElementById('btn-enter-factory').disabled = false;
+            } catch (err) {
+                console.error("Error fetching users:", err);
+                document.getElementById('reg-loading').innerHTML = `<i class="fa-solid fa-triangle-exclamation text-red-600 text-3xl mb-2"></i><p class="text-red-900 font-bold text-sm">Failed to connect to Database.</p>`;
+            }
+        }
+
+        function populateClassDropdown() {
+            const classSelect = document.getElementById('reg-class');
+            const classes = [...new Set(globalUsers.map(u => u.cls))].sort();
+            classes.forEach(c => {
+                const opt = document.createElement('option');
+                opt.value = c;
+                opt.textContent = c;
+                classSelect.appendChild(opt);
+            });
+        }
+
+        function updateClassNoList() {
+            const cls = document.getElementById('reg-class').value;
+            const noSelect = document.getElementById('reg-classno');
+            const nameSelect = document.getElementById('reg-name');
+            
+            noSelect.innerHTML = '<option value="">-- No. --</option>';
+            nameSelect.innerHTML = '<option value="">-- Select Name --</option>';
+            
+            if (!cls) {
+                noSelect.disabled = true;
+                nameSelect.disabled = true;
+                return;
+            }
+            
+            noSelect.disabled = false;
+            const classUsers = globalUsers.filter(u => u.cls === cls);
+            const classNos = [...new Set(classUsers.map(u => u.classNo))].sort((a,b) => parseInt(a) - parseInt(b));
+            
+            classNos.forEach(num => {
+                const opt = document.createElement('option');
+                opt.value = num;
+                opt.textContent = num;
+                noSelect.appendChild(opt);
+            });
+        }
+
+        function updateNameList() {
+            const cls = document.getElementById('reg-class').value;
+            const cNo = document.getElementById('reg-classno').value;
+            const nameSelect = document.getElementById('reg-name');
+            
+            nameSelect.innerHTML = '<option value="">-- Select Name --</option>';
+            
+            if (!cls || !cNo) {
+                nameSelect.disabled = true;
+                return;
+            }
+            
+            nameSelect.disabled = false;
+            const matchUsers = globalUsers.filter(u => u.cls === cls && u.classNo === cNo);
+            
+            matchUsers.forEach(u => {
+                const opt = document.createElement('option');
+                opt.value = u.name;
+                opt.textContent = u.name;
+                nameSelect.appendChild(opt);
+            });
+            
+            if (matchUsers.length === 1) {
+                nameSelect.value = matchUsers[0].name;
+            }
+        }
+
+        function renderLeaderboard(lb) {
+            const lbContainer = document.getElementById('leaderboard-list');
+            if(lb.length === 0) {
+                lbContainer.innerHTML = `<div class="text-center opacity-70 text-sm py-4">No records yet.</div>`;
+                return;
+            }
+            lbContainer.innerHTML = lb.map((u, i) => `
+                <div class="flex items-center justify-between bg-white/5 p-3 rounded-2xl border border-white/10 hover:bg-white/10 transition">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-full bg-gradient-to-br from-yellow-300 to-yellow-500 text-yellow-950 font-black text-sm flex items-center justify-center shadow-md">${i+1}</div>
+                        <div class="font-bold text-sm text-white truncate max-w-[130px]" title="${u.cls} - ${u.name}">${u.cls} - ${u.name}</div>
+                    </div>
+                    <div class="text-yellow-400 font-black text-xl drop-shadow-md">${u.score}</div>
+                </div>
+            `).join('');
+        }
+
+        async function loadUserHistory(cls, name) {
+            if(GAS_URL === "YOUR_GAS_WEB_APP_URL_HERE") return;
+            try {
+                // Added a cache-busting timestamp so the browser ALWAYS gets the newest points data!
+                const response = await fetch(`${GAS_URL}?action=getUserHistory&cls=${encodeURIComponent(cls)}&name=${encodeURIComponent(name)}&t=${Date.now()}`);
+                const data = await response.json();
+                state.user.historicalPoints = data.historicalPoints || 0;
+                state.user.attempts = data.attempts || 0;
+                
+                if (state.user.attempts > 0) {
+                    const prevContainer = document.getElementById('ui-prev-points-container');
+                    if (prevContainer) {
+                        prevContainer.classList.remove('hidden');
+                        document.getElementById('ui-prev-points').innerText = state.user.historicalPoints;
+                    }
+                }
+                
+                updateTotalScore(); 
+            } catch (err) {
+                console.error("Error fetching history:", err);
+            }
+        }
+
+        /* =========================================
+           AUDIO ENGINE (Web Audio API)
+           ========================================= */
+        let audioCtx;
+
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+        }
+
+        function playTone(freq, type, duration, vol, slideFreq = null) {
+            if (state.isMuted || !audioCtx) return;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = type;
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            
+            osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+            if (slideFreq) {
+                osc.frequency.exponentialRampToValueAtTime(slideFreq, audioCtx.currentTime + duration);
+            }
+            
+            gain.gain.setValueAtTime(vol, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+            
+            osc.start();
+            osc.stop(audioCtx.currentTime + duration);
+        }
+
+        function playClick() { playTone(600, 'sine', 0.1, 0.3, 300); }
+        function playHover() { playTone(800, 'sine', 0.05, 0.1); }
+        function playError() { playTone(200, 'sawtooth', 0.3, 0.3, 150); }
+        function playSuccess() {
+            if (state.isMuted || !audioCtx) return;
+            const notes = [440, 554.37, 659.25]; // A4, C#5, E5
+            notes.forEach((freq, i) => {
+                setTimeout(() => playTone(freq, 'triangle', 0.2, 0.3), i * 100);
+            });
+        }
+
+        function changeVolume(val) {
+            const bgm = document.getElementById('bg-music');
+            if (bgm) bgm.volume = val;
+        }
+
+        function toggleMute() {
+            state.isMuted = !state.isMuted;
+            const btn = document.getElementById('btn-mute');
+            btn.innerHTML = state.isMuted ? '<i class="fa-solid fa-volume-xmark text-red-400"></i>' : '<i class="fa-solid fa-volume-high"></i>';
+            const bgm = document.getElementById('bg-music');
+            if (bgm) bgm.muted = state.isMuted;
+            playClick();
+        }
+
+        /* =========================================
+           CUSTOM ALERTS
+           ========================================= */
+        function showWarning(msg) {
+            playError();
+            document.getElementById('alert-msg').innerText = msg;
+            document.getElementById('modal-alert').classList.remove('hidden');
+        }
+
+        function closeAlert() {
+            playClick();
+            document.getElementById('modal-alert').classList.add('hidden');
+        }
+
+        /* =========================================
+           THREE.JS BACKGROUND - GOLDEN TICKET DROP
+           ========================================= */
+        function initThreeJS() {
+            const container = document.getElementById('three-canvas');
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+            
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            container.appendChild(renderer.domElement);
+
+            const tickets = [];
+            const geometry = new THREE.BoxGeometry(1.5, 0.75, 0.05);
+            const material = new THREE.MeshStandardMaterial({ 
+                color: 0xffd700, 
+                metalness: 0.8, 
+                roughness: 0.2 
+            });
+
+            // Create 25 falling tickets
+            for(let i = 0; i < 25; i++) {
+                const ticket = new THREE.Mesh(geometry, material);
+                
+                // Random starting positions
+                ticket.position.x = (Math.random() - 0.5) * 20;
+                ticket.position.y = (Math.random() - 0.5) * 20;
+                ticket.position.z = (Math.random() - 0.5) * 10 - 5;
+
+                // Random initial rotations
+                ticket.rotation.x = Math.random() * Math.PI;
+                ticket.rotation.y = Math.random() * Math.PI;
+                ticket.rotation.z = Math.random() * Math.PI;
+
+                // Store unique speeds for each ticket
+                ticket.userData = {
+                    rotSpeedX: (Math.random() - 0.5) * 0.02,
+                    rotSpeedY: (Math.random() - 0.5) * 0.02,
+                    fallSpeed: Math.random() * 0.03 + 0.01
+                };
+
+                scene.add(ticket);
+                tickets.push(ticket);
+            }
+
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+            scene.add(ambientLight);
+            const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+            dirLight.position.set(5, 5, 5);
+            scene.add(dirLight);
+
+            camera.position.z = 5;
+
+            function animate() {
+                requestAnimationFrame(animate);
+                
+                tickets.forEach(ticket => {
+                    // Apply falling and rotating speeds
+                    ticket.position.y -= ticket.userData.fallSpeed;
+                    ticket.rotation.x += ticket.userData.rotSpeedX;
+                    ticket.rotation.y += ticket.userData.rotSpeedY;
+
+                    // Reset ticket to the top if it falls past the bottom of the screen
+                    if (ticket.position.y < -10) {
+                        ticket.position.y = 10;
+                        ticket.position.x = (Math.random() - 0.5) * 20;
+                        ticket.position.z = (Math.random() - 0.5) * 10 - 5;
+                    }
+                });
+                
+                renderer.render(scene, camera);
+            }
+            animate();
+
+            window.addEventListener('resize', () => {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            });
+        }
+
+        /* =========================================
+           CORE LOGIC & UI
+           ========================================= */
+        
+        document.querySelectorAll('.avatar-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                document.querySelectorAll('.avatar-btn').forEach(b => b.classList.remove('bg-purple-600/20', 'border-purple-600'));
+                const targetBtn = e.currentTarget;
+                targetBtn.classList.add('bg-purple-600/20', 'border-purple-600');
+                state.user.avatar = targetBtn.getAttribute('data-avatar');
+                playClick();
+            });
+        });
+
+        async function startGame() {
+            let name, cls, classno;
+            if(GAS_URL === "YOUR_GAS_WEB_APP_URL_HERE") {
+                name = prompt("Enter Name:") || "Test";
+                cls = prompt("Enter Class:") || "3A";
+                classno = prompt("Enter Class No:") || "1";
+            } else {
+                name = document.getElementById('reg-name').value;
+                cls = document.getElementById('reg-class').value;
+                classno = document.getElementById('reg-classno').value;
+            }
+
+            if (!name || !cls || !classno) {
+                showWarning("Please select your Class, Number, and Name!");
+                return;
+            }
+
+            const enterBtn = document.getElementById('btn-enter-factory');
+            const originalText = enterBtn.innerText;
+            enterBtn.disabled = true;
+            enterBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Checking records...`;
+
+            await loadUserHistory(cls, name);
+
+            enterBtn.innerHTML = originalText;
+
+            initAudio();
+            const bgm = document.getElementById('bg-music');
+            if (bgm) {
+                const volControl = document.getElementById('bgm-volume');
+                bgm.volume = volControl ? volControl.value : 0.3;
+                bgm.play().catch(e => console.log("BGM autoplay blocked:", e));
+            }
+            playSuccess();
+
+            state.user.name = name;
+            state.user.class = cls;
+            state.user.classno = classno;
+
+            document.getElementById('modal-register').classList.add('hidden');
+            document.getElementById('main-header').classList.remove('hidden');
+            document.getElementById('dashboard').classList.remove('hidden');
+
+            document.getElementById('ui-avatar').innerText = state.user.avatar;
+            document.getElementById('ui-name').innerText = state.user.name;
+            document.getElementById('ui-class').innerText = state.user.class;
+            document.getElementById('ui-classno').innerText = state.user.classno;
+
+            renderDashboard();
+        }
+
+        function renderDashboard() {
+            const grid = document.getElementById('mission-grid');
+            grid.innerHTML = '';
+            
+            missionsData.forEach(m => {
+                const isDone = state.completed[m.id];
+                const score = state.scores[m.id];
+                
+                const card = document.createElement('div');
+                card.className = `glass-gold rounded-2xl p-6 transition transform anim-float cursor-pointer relative overflow-hidden group ${isDone ? 'border-4 border-green-500' : 'hover:brightness-110'}`;
+                card.onclick = () => openMission(m.id);
+                card.onmouseenter = playHover;
+
+                card.innerHTML = `
+                    <div class="flex justify-between items-start mb-4 relative z-10">
+                        <div class="text-4xl filter drop-shadow-md">${m.icon}</div>
+                        <div class="text-right">
+                            <span class="text-xs font-bold px-2 py-1 rounded-full ${isDone ? 'bg-green-500 text-white' : 'bg-black/20 text-gray-800'}">
+                                ${isDone ? 'DONE <i class="fa-solid fa-check"></i>' : 'PENDING'}
+                            </span>
+                            <div class="mt-2 font-black text-xl text-black">${score} <span class="text-sm font-normal opacity-70">/ ${m.max}</span></div>
+                        </div>
+                    </div>
+                    <div class="text-xs font-bold text-purple-900 uppercase tracking-widest mb-1 relative z-10">${m.num}</div>
+                    <h3 class="text-xl font-bold mb-2 relative z-10 text-black">${m.title}</h3>
+                    <p class="text-sm relative z-10 text-gray-800">${m.desc}</p>
+                    ${isDone ? '<div class="absolute -right-4 -bottom-4 text-8xl opacity-10"><i class="fa-solid fa-medal"></i></div>' : ''}
+                `;
+                grid.appendChild(card);
+            });
+            updateTotalScore();
+        }
+
+        function updateTotalScore() {
+            const sessionTotal = Object.values(state.scores).reduce((a, b) => a + b, 0);
+            document.getElementById('ui-total-score').innerText = sessionTotal;
+            
+            // Update progress bar
+            const completedCount = Object.values(state.completed).filter(Boolean).length;
+            const progressBar = document.getElementById('ui-progress-bar');
+            if (progressBar) {
+                progressBar.style.width = (completedCount / 6 * 100) + '%';
+                document.getElementById('ui-progress-text').innerText = `${completedCount} / 6 Completed`;
+            }
+            
+            // Check if all missions are completed to unlock the submit button
+            const allCompleted = Object.values(state.completed).every(val => val === true);
+            const submitBtn = document.getElementById('final-submit-btn');
+            
+            if (submitBtn) {
+                if (allCompleted) {
+                    submitBtn.disabled = false;
+                    submitBtn.classList.remove('from-gray-500', 'to-gray-600', 'opacity-70', 'cursor-not-allowed');
+                    submitBtn.classList.add('from-purple-600', 'to-indigo-600', 'hover:from-purple-500', 'hover:to-indigo-500', 'hover:-translate-y-1');
+                    submitBtn.innerHTML = `<i class="fa-solid fa-cloud-arrow-up mr-2"></i> Save & Submit to Teacher`;
+                } else {
+                    submitBtn.disabled = true;
+                    submitBtn.classList.remove('from-purple-600', 'to-indigo-600', 'hover:from-purple-500', 'hover:to-indigo-500', 'hover:-translate-y-1');
+                    submitBtn.classList.add('from-gray-500', 'to-gray-600', 'opacity-70', 'cursor-not-allowed');
+                    submitBtn.innerHTML = `<i class="fa-solid fa-lock mr-2"></i> Complete 6 Missions to Submit`;
+                }
+            }
+            
+            if (sessionTotal === 39 && !window.wonTriggered) {
+                window.wonTriggered = true;
+                confetti({ particleCount: 150, spread: 100, origin: { y: 0.6 } });
+                playSuccess();
+                setTimeout(() => {
+                    showWarning(`Congratulations ${state.user.name}! You scored a perfect 39/39 this session!`);
+                }, 1000);
+            }
+        }
+
+        /* =========================================
+           SUBMIT TO TEACHER (GAS POST)
+           ========================================= */
+        function blobToBase64(blob) {
+            return new Promise((resolve, _) => {
+                const reader = new FileReader();
+                reader.onloadend = () => resolve(reader.result.split(',')[1]);
+                reader.readAsDataURL(blob);
+            });
+        }
+
+        async function submitToTeacher() {
+            if(GAS_URL === "YOUR_GAS_WEB_APP_URL_HERE") {
+                showWarning("Teacher hasn't set up the Database URL yet!");
+                return;
+            }
+
+            // Secondary check in case button was forced
+            const allCompleted = Object.values(state.completed).every(val => val === true);
+            if (!allCompleted) {
+                showWarning("You must complete all 6 missions before submitting to the teacher!");
+                return;
+            }
+
+            const btn = document.getElementById('final-submit-btn');
+            btn.disabled = true;
+            document.getElementById('modal-submitting').classList.remove('hidden');
+
+            try {
+                let audioBase64 = null;
+                let mimeType = null;
+                if (state.audioBlob) {
+                    audioBase64 = await blobToBase64(state.audioBlob);
+                    mimeType = state.audioBlob.type;
+                }
+
+                const sessionTotal = Object.values(state.scores).reduce((a, b) => a + b, 0);
+
+                const payload = {
+                    cls: state.user.class,
+                    classNo: state.user.classno,
+                    name: state.user.name,
+                    scores: state.scores,
+                    answers: state.answers,
+                    sessionTotal: sessionTotal,
+                    accumulatedTotal: Math.max(sessionTotal, state.user.historicalPoints),
+                    audioBase64: audioBase64,
+                    mimeType: mimeType
+                };
+
+                const response = await fetch(GAS_URL, {
+                    method: 'POST',
+                    body: JSON.stringify(payload),
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' } // text/plain prevents CORS preflight issues
+                });
+
+                const result = await response.json();
+                document.getElementById('modal-submitting').classList.add('hidden');
+
+                if(result.success) {
+                    confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+                    showWarning("All answers successfully saved to the Teacher's Dashboard!");
+                    btn.innerHTML = `<i class="fa-solid fa-check"></i> Submitted Successfully!`;
+                    btn.classList.replace('from-purple-600', 'from-green-600');
+                    btn.classList.replace('to-indigo-600', 'to-emerald-600');
+                } else {
+                    throw new Error(result.error);
+                }
+
+            } catch(e) {
+                console.error(e);
+                document.getElementById('modal-submitting').classList.add('hidden');
+                showWarning("Error submitting data. Please try again or tell the teacher.");
+                btn.disabled = false;
+            }
+        }
+
+
+        /* =========================================
+           MISSION RENDERERS & LOGIC
+           ========================================= */
+        function openMission(id) {
+            playClick();
+            activeMission = id;
+            const m = missionsData.find(x => x.id === id);
+            document.getElementById('mission-icon').innerText = m.icon;
+            document.getElementById('mission-num').innerText = m.num;
+            document.getElementById('mission-title').innerText = m.title;
+            document.getElementById('mission-desc').innerText = m.desc;
+            
+            ['m1','m2','m3','m4','m5','m6'].forEach(mid => {
+                const el = document.getElementById(`container-${mid}`);
+                if (el) el.classList.add('hidden');
+            });
+
+            const container = document.getElementById(`container-${id}`);
+            container.classList.remove('hidden');
+
+            if (!state.rendered[id]) {
+                if (id === 'm1') renderM1(container);
+                if (id === 'm2') renderM2(container);
+                if (id === 'm3') renderM3(container);
+                if (id === 'm4') renderM4(container);
+                if (id === 'm5') renderM5(container);
+                if (id === 'm6') renderM6(container);
+                state.rendered[id] = true;
+            }
+
+            document.getElementById('modal-mission').classList.remove('hidden');
+            
+            // Set scroll to top AFTER the modal is shown so the browser successfully applies it
+            document.getElementById('mission-content').scrollTop = 0;
+        }
+
+        function closeMission() {
+            playClick();
+            if (m6SongAudio) {
+                m6SongAudio.pause();
+                m6SongAudio.currentTime = 0;
+            }
+            // Resume background music when mission modal closes
+            const bgm = document.getElementById('bg-music');
+            if (bgm && !state.isMuted) {
+                bgm.play().catch(e => console.log(e));
+            }
+            
+            document.getElementById('modal-mission').classList.add('hidden');
+            renderDashboard();
+        }
+
+        // ================= MISSION 1 =================
+        let m1Slots = [null, null, null, null];
+        let m1DraggedId = null;
+
+        function renderM1(container) {
+            m1Slots = [null, null, null, null];
+            const names = ['Augustus', 'Veruca', 'Violet', 'Mike'].sort(() => Math.random() - 0.5);
+            
+            let html = `
+                <div class="space-y-6 text-black">
+                    <!-- Part A -->
+                    <div class="wonka-sheet p-6">
+                        <div class="flex items-center gap-2 mb-3">
+                            <span class="candy-badge">Part A</span>
+                            <h4 class="font-bold text-xl text-purple-900">Golden Ticket Winners (4 pts)</h4>
+                        </div>
+                        <p class="text-sm font-medium mb-4 text-purple-900/80 bg-purple-100/60 p-2.5 rounded-xl border border-purple-200">
+                            ✨ Drag and drop the lucky children into the correct ticket order they entered the factory!
+                        </p>
+                        
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4" id="m1-slots">
+                            ${[1,2,3,4].map(i => `
+                                <div class="ticket-slot border-3 border-dashed border-yellow-400 bg-yellow-50/80 rounded-2xl h-36 flex flex-col items-center justify-start p-3 transition-all relative shadow-sm" id="m1-slot-${i-1}" ondragover="m1AllowDrop(event)" ondrop="m1DropSlot(event, ${i-1})">
+                                    <span class="ticket-label text-sm font-extrabold text-yellow-700 bg-yellow-200/80 px-2.5 py-1 rounded-full mb-2 pointer-events-none shadow-sm">${i}${['st','nd','rd','th'][i-1]} Ticket 🎫</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                        
+                        <div class="min-h-[85px] p-4 bg-purple-50/80 border-2 border-dashed border-purple-300 rounded-2xl flex flex-wrap gap-3 justify-center items-center mb-3 shadow-inner" id="m1-pool" ondragover="m1AllowDrop(event)" ondrop="m1DropPool(event)">
+                            ${names.map(n => `
+                                <div draggable="true" ondragstart="m1DragStart(event)" id="m1-drag-${n}" data-name="${n}" class="cursor-grab active:cursor-grabbing px-5 py-2.5 bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-black rounded-xl shadow-md hover:from-purple-500 hover:to-indigo-500 hover:scale-105 transition transform relative z-10 border-2 border-purple-300">
+                                    🌟 ${n}
+                                </div>
+                            `).join('')}
+                        </div>
+                        
+                        <div class="text-center">
+                            <button onclick="m1Clear()" class="px-4 py-2 bg-purple-100 text-purple-800 font-bold text-sm rounded-xl hover:bg-purple-200 active:scale-95 transition shadow"><i class="fa-solid fa-rotate-left mr-1"></i> Reset Cards</button>
+                        </div>
+                    </div>
+
+                    <!-- Part B -->
+                    <div class="wonka-sheet p-6">
+                        <div class="flex items-center gap-2 mb-4">
+                            <span class="candy-badge">Part B</span>
+                            <h4 class="font-bold text-xl text-purple-900">Past Tense Verbs (5 pts)</h4>
+                        </div>
+                        <div class="space-y-3.5 text-base font-semibold text-purple-950">
+                            <div class="p-3 bg-white/80 rounded-xl border border-yellow-200 shadow-sm leading-relaxed">
+                                1. He <input type="text" id="m1-q1a" class="wonka-input w-28 text-center" placeholder="verb"> [open] it and <input type="text" id="m1-q1b" class="wonka-input w-28 text-center" placeholder="verb"> [see] a Golden Ticket!
+                            </div>
+                            <div class="p-3 bg-white/80 rounded-xl border border-yellow-200 shadow-sm leading-relaxed">
+                                2. Charlie <input type="text" id="m1-q2" class="wonka-input w-28 text-center" placeholder="verb"> [run] home with joy.
+                            </div>
+                            <div class="p-3 bg-white/80 rounded-xl border border-yellow-200 shadow-sm leading-relaxed">
+                                3. "I have the last Golden Ticket!" he <input type="text" id="m1-q3" class="wonka-input w-28 text-center" placeholder="verb"> [say].
+                            </div>
+                            <div class="p-3 bg-white/80 rounded-xl border border-yellow-200 shadow-sm leading-relaxed">
+                                4. Grandpa Joe <input type="text" id="m1-q4" class="wonka-input w-28 text-center" placeholder="verb"> [be] very happy!
+                            </div>
+                        </div>
+                    </div>
+
+                    <button onclick="submitM1()" class="submit-btn candy-btn w-full py-4 bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-400 hover:to-green-500 text-white font-black text-xl rounded-2xl shadow-xl transition transform hover:-translate-y-0.5">
+                        <i class="fa-solid fa-paper-plane mr-2"></i> Submit Mission 1
+                    </button>
+                </div>
+            `;
+            container.innerHTML = html;
+        }
+
+        function m1DragStart(e) {
+            if (state.completed.m1) { e.preventDefault(); return; }
+            playHover();
+            m1DraggedId = e.target.id;
+            e.dataTransfer.setData('text/plain', e.target.dataset.name);
+            e.dataTransfer.effectAllowed = 'move';
+        }
+
+        function m1AllowDrop(e) {
+            if (state.completed.m1) return;
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+        }
+
+        function m1DropSlot(e, index) {
+            if (state.completed.m1) return;
+            e.preventDefault();
+            const name = e.dataTransfer.getData('text/plain');
+            if(!name || !m1DraggedId) return;
+            
+            const draggedEl = document.getElementById(m1DraggedId);
+            const slotEl = document.getElementById(`m1-slot-${index}`);
+            
+            if (m1Slots[index] !== null && m1Slots[index] !== name) {
+                const existingName = m1Slots[index];
+                const existingEl = document.getElementById(`m1-drag-${existingName}`);
+                document.getElementById('m1-pool').appendChild(existingEl);
+            }
+
+            const oldIndex = m1Slots.indexOf(name);
+            if(oldIndex !== -1) m1Slots[oldIndex] = null;
+            
+            m1Slots[index] = name;
+            slotEl.appendChild(draggedEl);
+            playClick();
+            m1UpdateSlotVisuals();
+        }
+
+        function m1DropPool(e) {
+            if (state.completed.m1) return;
+            e.preventDefault();
+            const name = e.dataTransfer.getData('text/plain');
+            if(!name || !m1DraggedId) return;
+
+            const draggedEl = document.getElementById(m1DraggedId);
+            const oldIndex = m1Slots.indexOf(name);
+            if(oldIndex !== -1) m1Slots[oldIndex] = null;
+            
+            document.getElementById('m1-pool').appendChild(draggedEl);
+            playClick();
+            m1UpdateSlotVisuals();
+        }
+
+        function m1UpdateSlotVisuals() {
+            for(let i=0; i<4; i++) {
+                const slot = document.getElementById(`m1-slot-${i}`);
+                const label = slot.querySelector('.ticket-label');
+                if(m1Slots[i]) {
+                    slot.className = "ticket-slot border-3 border-solid border-yellow-500 bg-gradient-to-br from-amber-100 to-yellow-300 rounded-2xl h-36 flex flex-col items-center justify-start p-3 transition-all relative shadow-md transform scale-[1.02]";
+                    label.className = "ticket-label text-xs font-extrabold text-amber-950 bg-amber-400/80 px-2.5 py-1 rounded-full mb-2 pointer-events-none shadow-sm";
+                } else {
+                    slot.className = "ticket-slot border-3 border-dashed border-yellow-400 bg-yellow-50/80 rounded-2xl h-36 flex flex-col items-center justify-start p-3 transition-all relative shadow-sm";
+                    label.className = "ticket-label text-xs font-extrabold text-yellow-700 bg-yellow-200/80 px-2.5 py-1 rounded-full mb-2 pointer-events-none shadow-sm";
+                }
+            }
+        }
+
+        function m1Clear() {
+            if (state.completed.m1) return;
+            playClick();
+            m1Slots = [null, null, null, null];
+            const pool = document.getElementById('m1-pool');
+            let names = ['Augustus', 'Veruca', 'Violet', 'Mike'].sort(() => Math.random() - 0.5); 
+            names.forEach(n => {
+                const el = document.getElementById(`m1-drag-${n}`);
+                if(el) pool.appendChild(el);
+            });
+            m1UpdateSlotVisuals();
+        }
+
+        function submitM1() {
+            if (state.completed.m1) return;
+            
+            if (m1Slots.includes(null)) {
+                showWarning("Please assign all Golden Tickets before submitting!");
+                return;
+            }
+            const m1Inputs = ['m1-q1a', 'm1-q1b', 'm1-q2', 'm1-q3', 'm1-q4'];
+            for (let id of m1Inputs) {
+                if (!document.getElementById(id).value.trim()) {
+                    showWarning("Please fill in all past tense verbs before submitting!");
+                    return;
+                }
+            }
+
+            let score = 0;
+            const aAnswers = ['Augustus', 'Veruca', 'Violet', 'Mike'];
+            for(let i=0; i<4; i++) {
+                const slotEl = document.getElementById(`m1-slot-${i}`);
+                if(m1Slots[i] === aAnswers[i]) {
+                    score++;
+                    slotEl.classList.replace('border-yellow-500', 'border-green-500');
+                    slotEl.classList.replace('from-amber-100', 'from-green-200');
+                    slotEl.classList.replace('to-yellow-300', 'to-green-400');
+                } else {
+                    slotEl.classList.replace('border-yellow-500', 'border-red-500');
+                    slotEl.classList.replace('from-amber-100', 'from-red-200');
+                    slotEl.classList.replace('to-yellow-300', 'to-red-400');
+                }
+            }
+            
+            const check = (id, ans) => {
+                const el = document.getElementById(id);
+                if (el.value.trim().toUpperCase() === ans.toUpperCase()) {
+                    score++;
+                    el.classList.add('bg-green-100', 'text-green-800', 'border-green-500');
+                } else {
+                    el.classList.add('bg-red-100', 'text-red-800', 'border-red-500');
+                }
+                return el.value.trim();
+            };
+            
+            const v1 = check('m1-q1a', 'OPENED');
+            const v2 = check('m1-q1b', 'SAW');
+            const v3 = check('m1-q2', 'RAN');
+            const v4 = check('m1-q3', 'SAID');
+            const v5 = check('m1-q4', 'WAS');
+
+            state.answers.m1 = `Tickets: [${m1Slots.join(', ')}] | Verbs: [${v1}, ${v2}, ${v3}, ${v4}, ${v5}]`;
+            saveScore('m1', score);
+        }
+
+        // ================= MISSION 2 =================
+        const m2Grid = [
+            "HIGBFECWFX",
+            "ADSMAALLEE",
+            "TYIRCOINYE",
+            "RINOTSAURT",
+            "AZJAOGATES",
+            "SQUIRRELAY",
+            "HIBQYBPTVO",
+            "AOWSDQAFMQ",
+            "MAXRTPLAYP",
+            "BPGBECWFTC"
+        ];
+        
+        let m2Found = [];
+        let m2Selecting = false;
+        let m2SelectedCells = [];
+
+        function renderM2(container) {
+            m2Found = [];
+            let gridHtml = '';
+            for(let r=0; r<10; r++) {
+                for(let c=0; c<10; c++) {
+                    gridHtml += `<div class="grid-cell" id="c-${r}-${c}">${m2Grid[r][c]}</div>`;
+                }
+            }
+
+            container.innerHTML = `
+                <div class="wonka-sheet p-6">
+                    <div class="flex flex-col md:flex-row gap-6">
+                        <div class="flex-1">
+                            <div class="bg-purple-900/40 p-4 rounded-2xl border-2 border-yellow-400/50 shadow-inner">
+                                <div class="word-grid no-select" id="m2-board">
+                                    ${gridHtml}
+                                </div>
+                            </div>
+                            <button onclick="submitM2()" class="submit-btn candy-btn w-full py-4 bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-400 hover:to-green-500 text-white font-black text-xl rounded-2xl shadow-xl transition transform hover:-translate-y-0.5 mt-4">
+                                <i class="fa-solid fa-paper-plane mr-2"></i> Submit Mission 2
+                            </button>
+                        </div>
+                        <div class="w-full md:w-56 bg-amber-50 p-5 rounded-2xl border-2 border-yellow-400 shadow-md">
+                            <div class="flex items-center gap-2 mb-3 pb-2 border-b-2 border-yellow-300">
+                                <span class="text-xl">🍭</span>
+                                <h4 class="font-extrabold text-purple-900 text-lg">Target Words</h4>
+                            </div>
+                            <ul class="space-y-2.5 font-fun tracking-wide text-purple-950 font-bold" id="m2-wordlist">
+                                ${["COIN", "FACTORY", "GATES", "NUT", "TRASH", "SQUIRREL"].map(w => `
+                                    <li id="word-${w}" class="bg-white px-3 py-1.5 rounded-xl border border-amber-200 shadow-sm flex items-center">
+                                        <i class="fa-regular fa-square text-amber-500 mr-2 text-base"></i> ${w}
+                                    </li>
+                                `).join('')}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            setTimeout(() => {
+                const board = document.getElementById('m2-board');
+                if (board) {
+                    board.addEventListener('mousedown', m2HandleDragStart);
+                    board.addEventListener('mouseover', m2HandleDragAdd);
+                    board.addEventListener('touchstart', m2HandleDragStart, {passive: false});
+                    board.addEventListener('touchmove', m2HandleDragAdd, {passive: false});
+                }
+            }, 0);
+        }
+
+        document.addEventListener('mouseup', m2HandleDragEnd);
+        document.addEventListener('touchend', m2HandleDragEnd);
+
+        function m2HandleDragStart(e) {
+            if (state.completed.m2) return;
+            m2Selecting = true;
+            m2SelectedCells = [];
+            
+            document.querySelectorAll('.grid-cell.selected').forEach(c => {
+                if (!c.classList.contains('found')) c.classList.remove('selected');
+            });
+            m2HandleDragAdd(e);
+        }
+
+        function m2HandleDragAdd(e) {
+            if (!m2Selecting) return;
+            let el = null;
+            if (e.type.includes('touch')) {
+                e.preventDefault(); 
+                const touch = e.touches[0];
+                el = document.elementFromPoint(touch.clientX, touch.clientY);
+            } else {
+                el = e.target;
+            }
+
+            if (el && el.classList.contains('grid-cell')) {
+                if (m2SelectedCells.length === 0 || m2SelectedCells[m2SelectedCells.length - 1] !== el) {
+                    m2SelectedCells.push(el);
+                    if (!el.classList.contains('found')) {
+                        el.classList.add('selected');
+                    }
+                    playHover();
+                }
+            }
+        }
+
+        function m2HandleDragEnd(e) {
+            if (!m2Selecting) return;
+            m2Selecting = false;
+            if (m2SelectedCells.length === 0) return;
+
+            const word = m2SelectedCells.map(c => c.innerText).join('');
+            const wordRev = word.split('').reverse().join('');
+            const targets = ["COIN", "FACTORY", "GATES", "NUT", "TRASH", "SQUIRREL"];
+            let matchedTarget = null;
+
+            for(let w of targets) {
+                if((word === w || wordRev === w) && !m2Found.includes(w)) {
+                    matchedTarget = w;
+                    break;
+                }
+            }
+
+            if (matchedTarget) {
+                m2Found.push(matchedTarget);
+                m2SelectedCells.forEach(item => {
+                    item.classList.remove('selected');
+                    item.classList.add('found', 'correct-pulse');
+                    setTimeout(() => item.classList.remove('correct-pulse'), 1500);
+                });
+
+                const li = document.getElementById(`word-${matchedTarget}`);
+                li.className = "bg-green-100 px-3 py-1.5 rounded-xl border border-green-300 shadow-sm flex items-center text-green-900";
+                li.innerHTML = `<i class="fa-solid fa-square-check text-green-600 mr-2 text-base"></i> <span class="line-through opacity-70">${matchedTarget}</span>`;
+                playSuccess();
+            } else {
+                if (m2SelectedCells.length > 1) playError();
+                m2SelectedCells.forEach(el => {
+                    if (!el.classList.contains('found')) {
+                        el.classList.remove('selected');
+                        el.style.background = '#ef4444';
+                        setTimeout(() => el.style.background = '', 300);
+                    }
+                });
+            }
+            m2SelectedCells = [];
+        }
+
+        function submitM2() {
+            if (state.completed.m2) return;
+            state.answers.m2 = `Found: ${m2Found.length > 0 ? m2Found.join(', ') : 'None'}`;
+            saveScore('m2', m2Found.length);
+        }
+
+        // ================= MISSION 3 =================
+        const m3Questions = [
+            { text: "Charlie and Grandpa Joe went [to/from] the chocolate factory.", ans: "TO" },
+            { text: "Violet, Augustus, Mike, and Veruca went with [their/them] families.", ans: "THEIR" },
+            { text: "Mr. Wonka [opened/open] the gates.", ans: "OPENED" },
+            { text: "You [can/cannot] eat the chocolate trees and flowers.", ans: "CAN" },
+            { text: "The Oompa-Loompas are [little/big] people.", ans: "LITTLE" },
+            { text: "Augustus drank from the chocolate river and [fell/jumped] in.", ans: "FELL" },
+            { text: "Mike Teavee [loved/hated] watching TV.", ans: "LOVED" },
+            { text: "In the room, there was a [big/small] TV camera.", ans: "BIG" },
+            { text: "This camera sends chocolate bars [into/over] people's TVs.", ans: "INTO" },
+            { text: "Mike stood [in front of / behind] the camera.", ans: "IN FRONT OF" }
+        ];
+
+        function renderM3(container) {
+            let html = `<div class="space-y-6 text-black">`;
+            const sections = {
+                0: { title: "Section 1: Factory Visit", icon: "🍫" },
+                3: { title: "Section 2: Factory Discoveries", icon: "✨" },
+                6: { title: "Section 3: Room Prepositions", icon: "📺" }
+            };
+
+            m3Questions.forEach((q, i) => {
+                if (sections[i]) {
+                    if (i > 0) html += `</div></div>`;
+                    html += `
+                        <div class="wonka-sheet p-6">
+                            <div class="flex items-center gap-2 mb-4 pb-2 border-b-2 border-yellow-300">
+                                <span class="text-2xl">${sections[i].icon}</span>
+                                <h4 class="font-extrabold text-xl text-purple-900">${sections[i].title}</h4>
+                            </div>
+                            <div class="space-y-3.5">
+                    `;
+                }
+
+                html += `
+                    <div class="p-3.5 bg-white/90 rounded-2xl border border-purple-100 shadow-sm flex flex-col md:flex-row md:items-center gap-3 hover:border-yellow-300 transition">
+                        <span class="w-7 h-7 rounded-full bg-purple-100 text-purple-900 font-extrabold text-xs flex items-center justify-center shrink-0">${i+1}</span>
+                        <div class="flex-1 text-sm md:text-base font-semibold text-purple-950">${q.text.replace(/\[(.*?)\]/, `<span class="bg-purple-100 text-purple-800 px-2 py-0.5 rounded-lg text-xs font-black border border-purple-300 mx-1">[$1]</span>`)}</div>
+                        <input type="text" id="m3-q${i}" class="wonka-input w-full md:w-36 text-center" placeholder="type answer">
+                    </div>
+                `;
+            });
+
+            html += `</div></div>
+            <button onclick="submitM3()" class="submit-btn candy-btn w-full py-4 bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-400 hover:to-green-500 text-white font-black text-xl rounded-2xl shadow-xl transition transform hover:-translate-y-0.5 mt-2">
+                <i class="fa-solid fa-paper-plane mr-2"></i> Submit Mission 3
+            </button></div>`;
+            container.innerHTML = html;
+        }
+
+        function submitM3() {
+            if (state.completed.m3) return;
+            
+            let answersArr = [];
+            for(let i=0; i<m3Questions.length; i++) {
+                const val = document.getElementById(`m3-q${i}`).value.trim();
+                if(!val) {
+                    showWarning("Please answer all questions before submitting!");
+                    return;
+                }
+                answersArr.push(val);
+            }
+
+            let score = 0;
+            m3Questions.forEach((q, i) => {
+                const el = document.getElementById(`m3-q${i}`);
+                if(el.value.trim().toUpperCase() === q.ans) {
+                    score++;
+                    el.classList.add('bg-green-100', 'text-green-800', 'border-green-500');
+                } else {
+                    el.classList.add('bg-red-100', 'text-red-800', 'border-red-500');
+                }
+            });
+            
+            state.answers.m3 = answersArr.join(', ');
+            saveScore('m3', score);
+        }
+
+        // ================= MISSION 4 =================
+        const m4Story = [
+            { id: 1, text: "Charlie bought a chocolate bar and found the fifth Golden Ticket." },
+            { id: 2, text: "Charlie and four other children entered Willy Wonka's factory." },
+            { id: 3, text: "Augustus Gloop drank from the chocolate river and got sucked up a pipe." },
+            { id: 4, text: "Violet Beauregarde tried experimental gum and turned into a giant blueberry." },
+            { id: 5, text: "Mike Teavee jumped in front of the TV camera and became tiny." },
+            { id: 6, text: "Charlie was the only well-behaved child left, so Mr. Wonka gave him the factory!" }
+        ];
+
+        let m4DraggedEl = null;
+
+        function renderM4(container) {
+            let shuffled = [...m4Story].sort(() => Math.random() - 0.5);
+            
+            let html = `
+                <div class="space-y-6 text-black">
+                    <!-- Part A -->
+                    <div class="wonka-sheet p-6">
+                        <div class="flex items-center gap-2 mb-2">
+                            <span class="candy-badge">Part A</span>
+                            <h4 class="font-bold text-xl text-purple-900">Story Order (6 pts)</h4>
+                        </div>
+                        <p class="text-sm font-medium mb-4 text-purple-900/80 bg-purple-100/60 p-2.5 rounded-xl border border-purple-200">
+                            📜 Drag and reorder the cards into the correct chronological order of the story!
+                        </p>
+                        <div class="space-y-3" id="m4-sort-list">
+                            ${shuffled.map((s, idx) => `
+                                <div class="flex items-stretch gap-3">
+                                    <div class="w-20 sm:w-24 bg-gradient-to-br from-amber-300 to-yellow-400 border-2 border-yellow-500 rounded-2xl flex items-center justify-center text-purple-950 font-black text-xs md:text-sm shadow-sm shrink-0 select-none">
+                                        Line ${idx + 1}
+                                    </div>
+
+                                    <div class="m4-slot flex-1 flex items-center" 
+                                         ondragover="m4DragOver(event)" 
+                                         ondragenter="m4DragEnter(event)" 
+                                         ondragleave="m4DragLeave(event)" 
+                                         ondrop="m4Drop(event)">
+                                        <div draggable="true" 
+                                             ondragstart="m4DragStart(event)" 
+                                             ondragend="m4DragEnd(event)" 
+                                             data-id="${s.id}" 
+                                             class="m4-card w-full flex items-center gap-3 bg-white p-3.5 rounded-2xl border-2 border-purple-200 shadow-sm hover:border-yellow-400 hover:shadow-md transition-all duration-200 cursor-grab active:cursor-grabbing transform hover:scale-[1.01]">
+                                            
+                                            <div class="w-8 h-8 rounded-xl bg-purple-100 text-purple-700 flex items-center justify-center shrink-0 pointer-events-none shadow-inner">
+                                                <i class="fa-solid fa-grip-vertical"></i>
+                                            </div>
+
+                                            <div class="text-sm md:text-base font-bold text-purple-950 flex-1 pointer-events-none leading-snug">${s.text}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+
+                    <!-- Part B -->
+                    <div class="wonka-sheet p-6">
+                        <div class="flex items-center gap-2 mb-4">
+                            <span class="candy-badge">Part B</span>
+                            <h4 class="font-bold text-xl text-purple-900">Vocabulary (4 pts)</h4>
+                        </div>
+                        <div class="space-y-3.5 text-sm font-semibold text-purple-950">
+                            <div class="p-3 bg-white/80 rounded-xl border border-yellow-200 shadow-sm flex flex-col md:flex-row justify-between md:items-center gap-2">
+                                <span>1. Things you don't want or need.</span>
+                                <select id="m4-q1" class="wonka-select">
+                                    <option value="">-- Select --</option>
+                                    <option value="Factory">Factory</option>
+                                    <option value="Gates">Gates</option>
+                                    <option value="Trash / Garbage">Trash / Garbage</option>
+                                </select>
+                            </div>
+                            <div class="p-3 bg-white/80 rounded-xl border border-yellow-200 shadow-sm flex flex-col md:flex-row justify-between md:items-center gap-2">
+                                <span>2. Animals that love eating nuts.</span>
+                                <select id="m4-q2" class="wonka-select">
+                                    <option value="">-- Select --</option>
+                                    <option value="Oompa-Loompas">Oompa-Loompas</option>
+                                    <option value="Squirrels">Squirrels</option>
+                                    <option value="Children">Children</option>
+                                </select>
+                            </div>
+                            <div class="p-3 bg-white/80 rounded-xl border border-yellow-200 shadow-sm flex flex-col md:flex-row justify-between md:items-center gap-2">
+                                <span>3. Yummy treat made in the factory.</span>
+                                <select id="m4-q3" class="wonka-select">
+                                    <option value="">-- Select --</option>
+                                    <option value="Chocolate bar">Chocolate bar</option>
+                                    <option value="Wooden stick">Chocolate stick</option>
+                                    <option value="Paper ticket">Paper ticket</option>
+                                </select>
+                            </div>
+                            <div class="p-3 bg-white/80 rounded-xl border border-yellow-200 shadow-sm flex flex-col md:flex-row justify-between md:items-center gap-2">
+                                <span>4. Child whose father was very rich.</span>
+                                <select id="m4-q4" class="wonka-select">
+                                    <option value="">-- Select --</option>
+                                    <option value="Augustus Gloop">Augustus Gloop</option>
+                                    <option value="Veruca Salt">Veruca Salt</option>
+                                    <option value="Violet Beauregarde">Violet Beauregarde</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button onclick="submitM4()" class="submit-btn candy-btn w-full py-4 bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-400 hover:to-green-500 text-white font-black text-xl rounded-2xl shadow-xl transition transform hover:-translate-y-0.5">
+                        <i class="fa-solid fa-paper-plane mr-2"></i> Submit Mission 4
+                    </button>
+                </div>
+            `;
+            container.innerHTML = html;
+        }
+
+        function m4DragStart(e) {
+            if (state.completed.m4) { e.preventDefault(); return; }
+            playHover();
+            m4DraggedEl = e.currentTarget;
+            e.dataTransfer.setData('text/plain', m4DraggedEl.getAttribute('data-id'));
+            e.dataTransfer.effectAllowed = 'move';
+            
+            setTimeout(() => {
+                if (m4DraggedEl) {
+                    m4DraggedEl.classList.add('opacity-40', 'scale-[0.98]', 'ring-4', 'ring-yellow-400', 'border-yellow-500', 'bg-yellow-50');
+                }
+            }, 0);
+        }
+
+        function m4DragOver(e) {
+            if (state.completed.m4) return;
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+        }
+
+        function m4DragEnter(e) {
+            if (state.completed.m4) return;
+            e.preventDefault();
+            const slot = e.currentTarget.closest('.m4-slot');
+            if (slot && !slot.contains(m4DraggedEl)) {
+                slot.querySelector('.m4-card')?.classList.add('border-purple-500', 'bg-purple-50', 'scale-[1.02]', 'shadow-xl');
+            }
+        }
+
+        function m4DragLeave(e) {
+            if (state.completed.m4) return;
+            const slot = e.currentTarget.closest('.m4-slot');
+            if (slot) {
+                slot.querySelector('.m4-card')?.classList.remove('border-purple-500', 'bg-purple-50', 'scale-[1.02]', 'shadow-xl');
+            }
+        }
+
+        function m4Drop(e) {
+            if (state.completed.m4) return;
+            e.preventDefault();
+            
+            const targetSlot = e.currentTarget.closest('.m4-slot');
+            if (!targetSlot || !m4DraggedEl) return;
+
+            const allSlots = Array.from(document.querySelectorAll('.m4-slot'));
+            const allCards = Array.from(document.querySelectorAll('.m4-card'));
+
+            const sourceSlot = m4DraggedEl.closest('.m4-slot');
+            const draggedIdx = allSlots.indexOf(sourceSlot);
+            const targetIdx = allSlots.indexOf(targetSlot);
+
+            allCards.forEach(c => c.classList.remove('border-purple-500', 'bg-purple-50', 'scale-[1.02]', 'shadow-xl'));
+
+            if (draggedIdx !== -1 && targetIdx !== -1 && draggedIdx !== targetIdx) {
+                allCards.splice(draggedIdx, 1);
+                allCards.splice(targetIdx, 0, m4DraggedEl);
+
+                allSlots.forEach((slot, i) => {
+                    slot.appendChild(allCards[i]);
+                });
+                playClick();
+            }
+        }
+
+        function m4DragEnd(e) {
+            if (m4DraggedEl) {
+                m4DraggedEl.classList.remove('opacity-40', 'scale-[0.98]', 'ring-4', 'ring-yellow-400', 'border-yellow-500', 'bg-yellow-50');
+                m4DraggedEl = null;
+            }
+            document.querySelectorAll('.m4-card').forEach(el => {
+                el.classList.remove('border-purple-500', 'bg-purple-50', 'scale-[1.02]', 'shadow-xl');
+            });
+        }
+
+        function submitM4() {
+            if (state.completed.m4) return;
+            
+            const selects = ['m4-q1', 'm4-q2', 'm4-q3', 'm4-q4'];
+            for (let id of selects) {
+                if (!document.getElementById(id).value) {
+                    showWarning("Please answer all vocabulary questions before submitting!");
+                    return;
+                }
+            }
+
+            let score = 0;
+            const rows = document.querySelectorAll('.m4-card');
+            let orderIds = [];
+            rows.forEach((r, i) => {
+                const id = parseInt(r.getAttribute('data-id'));
+                orderIds.push(id);
+                if(id === i + 1) {
+                    score++;
+                    r.classList.add('border-green-500', 'bg-green-50');
+                } else {
+                    r.classList.add('border-red-500', 'bg-red-50');
+                }
+            });
+
+            const check = (id, ans) => {
+                const el = document.getElementById(id);
+                if (el.value === ans) {
+                    score++;
+                    el.classList.add('border-green-500', 'bg-green-100');
+                } else {
+                    el.classList.add('border-red-500', 'bg-red-100');
+                }
+                return el.value;
+            };
+            
+            const v1 = check('m4-q1', 'Trash / Garbage');
+            const v2 = check('m4-q2', 'Squirrels');
+            const v3 = check('m4-q3', 'Chocolate bar');
+            const v4 = check('m4-q4', 'Veruca Salt');
+
+            state.answers.m4 = `Order IDs: [${orderIds.join(',')}] | Vocab: [${v1}, ${v2}, ${v3}, ${v4}]`;
+            saveScore('m4', score);
+        }
+
+        // ================= MISSION 5 =================
+        function renderM5(container) {
+            container.innerHTML = `
+                <div class="wonka-sheet p-6 text-black mb-6">
+                    <div class="flex items-center gap-2 mb-3 pb-2 border-b-2 border-yellow-300">
+                        <span class="text-2xl">✍️</span>
+                        <h4 class="font-extrabold text-xl text-purple-900">Who is your favorite character in Charlie and the Chocolate Factory? Why do you like them?</h4>
+                    </div>
+                    
+                    <textarea id="m5-essay-input" rows="4" class="wonka-input w-full text-base sm:text-lg p-4 font-semibold rounded-2xl shadow-inner" placeholder="My favorite character is Charlie because he is very kind and polite..."></textarea>
+                    
+                    <div id="m5-feedback-container" class="mt-5 hidden space-y-3">
+                        <div id="m5-api-notice" class="hidden p-3.5 bg-rose-100 border-2 border-rose-400 rounded-2xl text-rose-950 font-bold text-xs flex items-center gap-2 shadow-sm">
+                            <i class="fa-solid fa-triangle-exclamation text-rose-600 text-lg shrink-0"></i>
+                            <span id="m5-api-notice-text">Notice: API unavailable.</span>
+                        </div>
+                        <div id="m5-praise-text" class="p-4 rounded-2xl font-extrabold text-sm bg-green-100 text-green-900 border-2 border-green-500 flex items-center gap-3 shadow-sm"></div>
+                        <div id="m5-correction-box" class="hidden space-y-3"></div>
+                    </div>
+                </div>
+                <button id="m5-submit-btn" onclick="submitM5()" class="submit-btn candy-btn w-full py-4 bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-400 hover:to-green-500 text-white font-black text-xl rounded-2xl shadow-xl transition transform hover:-translate-y-0.5">
+                    <i class="fa-solid fa-wand-magic-sparkles mr-2"></i> Analyze & Submit
+                </button>
+            `;
+        }
+
+        async function submitM5() {
+            if (state.completed.m5) return;
+            const textInput = document.getElementById('m5-essay-input');
+            const text = textInput ? textInput.value.trim() : '';
+            const container = document.getElementById('m5-feedback-container');
+            const apiNotice = document.getElementById('m5-api-notice');
+            const apiNoticeText = document.getElementById('m5-api-notice-text');
+            const praiseText = document.getElementById('m5-praise-text');
+            const correctionBox = document.getElementById('m5-correction-box');
+            const submitBtn = document.getElementById('m5-submit-btn') || document.querySelector('#container-m5 .submit-btn');
+
+            if (!text || text.length < 5) {
+                showWarning("Please write your answer about your favorite character!");
+                return;
+            }
+
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = `<i class="fa-solid fa-wand-magic-sparkles fa-spin mr-2"></i> Teacher is checking your writing...`;
+            }
+
+            let resultScore = 3;
+            let isMeaningful = true;
+            let resultPraise = "";
+            let spellingCorrections = [];
+            let grammarCorrections = [];
+            let contentTips = [];
+            let apiErrorMsg = null;
+
+            const systemPrompt = `You are a firm, helpful, and constructive Primary 3 (P3, age 8-9 ESL) English teacher marking student writing about "Charlie and the Chocolate Factory".
+Prompt: "Who is your favorite character in Charlie and the Chocolate Factory? Why do you like them?"
+
+EVALUATION RULES:
+1. GIBBERISH / NONSENSE CHECK: If the text is random letters, keyboard mashing, unreadable garbage (e.g. "dsd ss. dsds ds d/."). set isMeaningful=false and score=0. Do NOT praise garbage text. Politely state that the writing is unreadable.
+2. SPELLING CORRECTIONS: Identify any misspelled words explicitly.
+3. GRAMMAR CORRECTIONS: Identify grammar, capitalization, and punctuation mistakes.
+4. CONTENT FEEDBACK: Evaluate if they named a character and gave a clear reason why.
+5. NO OVER-PRAISING: Be honest and clear.
+
+CRITICAL: Return ONLY a valid JSON object matching this schema:
+{
+  "score": integer (0 to 3),
+  "isMeaningful": boolean,
+  "praise": string,
+  "spellingCorrections": array of strings,
+  "grammarCorrections": array of strings,
+  "contentTips": array of strings
+}`;
+
+            const userQuery = `Student Name: ${state.user.name || 'Student'}\nStudent Input: "${text}"`;
+            
+            // We moved the API key to Google Apps Script to protect it!
+            const useAI = true; 
+
+            if (useAI) {
+                try {
+                    const response = await fetch(GAS_URL, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'text/plain;charset=utf-8'
+                        },
+                        body: JSON.stringify({
+                            action: "evaluateMission5",
+                            systemPrompt: systemPrompt,
+                            userQuery: userQuery
+                        })
+                    });
+
+                    if (response.ok) {
+                        const data = await response.json();
+                        const rawContent = data.choices?.[0]?.message?.content;
+                        if (rawContent) {
+                            const parsed = JSON.parse(rawContent);
+                            resultScore = Math.min(3, Math.max(0, parseInt(parsed.score) ?? 1));
+                            isMeaningful = parsed.isMeaningful !== false;
+                            resultPraise = parsed.praise || "Here is feedback on your writing.";
+                            spellingCorrections = Array.isArray(parsed.spellingCorrections) ? parsed.spellingCorrections : [];
+                            grammarCorrections = Array.isArray(parsed.grammarCorrections) ? parsed.grammarCorrections : [];
+                            contentTips = Array.isArray(parsed.contentTips) ? parsed.contentTips : [];
+                        } else {
+                            throw new Error("No response content from API.");
+                        }
+                    } else {
+                        const errData = await response.json().catch(() => ({}));
+                        throw new Error(errData.error?.message || `HTTP ${response.status} ${response.statusText}`);
+                    }
+                } catch (err) {
+                    console.warn("API issue, falling back to local evaluation:", err);
+                    apiErrorMsg = err.message || "Failed to reach AI API.";
+                }
+            } else {
+                apiErrorMsg = "AI API is missing. Running in local teacher mode.";
+            }
+
+            if (apiErrorMsg) {
+                const cleanText = text.replace(/[^a-zA-Z]/g, '');
+                const vowels = (cleanText.match(/[aeiouyAEIOUY]/g) || []).length;
+                const vowelRatio = cleanText.length > 0 ? vowels / cleanText.length : 0;
+                
+                if (vowelRatio < 0.20 || cleanText.length < 4) {
+                    isMeaningful = false;
+                    resultScore = 0;
+                    resultPraise = "We could not understand your sentence. Please type real English words!";
+                    contentTips.push("Try writing: 'My favorite character is Charlie because he is kind.'");
+                } else {
+                    let score = 3;
+                    if (text[0] !== text[0].toUpperCase()) {
+                        grammarCorrections.push("Start your sentence with a CAPITAL letter.");
+                        score -= 0.5;
+                    }
+                    if (!['.', '!', '?'].includes(text[text.length - 1])) {
+                        grammarCorrections.push("End your sentence with a full stop (.) or exclamation mark (!).");
+                        score -= 0.5;
+                    }
+                    const names = ['Charlie', 'Wonka', 'Veruca', 'Violet', 'Augustus', 'Mike'];
+                    let mentioned = false;
+                    names.forEach(n => {
+                        if (text.toLowerCase().includes(n.toLowerCase())) {
+                            mentioned = true;
+                            if (!text.includes(n)) {
+                                grammarCorrections.push(`Capitalize character names like "${n}".`);
+                                score -= 0.5;
+                            }
+                        }
+                    });
+                    if (!mentioned) {
+                        contentTips.push("Mention a specific character (e.g. Charlie, Willy Wonka, Veruca, Violet, Augustus, Mike).");
+                        score -= 0.5;
+                    }
+                    if (!text.toLowerCase().includes('because') && !text.toLowerCase().includes('like') && !text.toLowerCase().includes('is')) {
+                        contentTips.push("Explain WHY you like them using 'because...'");
+                        score -= 0.5;
+                    }
+
+                    resultScore = Math.max(1, Math.round(score));
+                    resultPraise = resultScore === 3 ? "Great job writing about your favorite character!" : "Good attempt! Here are ways to fix and improve your response:";
+                }
+            }
+
+            container.classList.remove('hidden');
+
+            if (apiErrorMsg && apiNotice && apiNoticeText) {
+                apiNoticeText.innerText = `API Notice: ${apiErrorMsg}`;
+                apiNotice.classList.remove('hidden');
+            } else if (apiNotice) {
+                apiNotice.classList.add('hidden');
+            }
+            
+            if (!isMeaningful || resultScore === 0) {
+                praiseText.className = "p-4 rounded-2xl font-bold text-sm bg-red-100 text-red-900 border-2 border-red-500 flex items-center gap-3";
+                praiseText.innerHTML = `<i class="fa-solid fa-triangle-exclamation text-red-600 text-2xl shrink-0"></i> <span>${resultPraise}</span>`;
+            } else if (resultScore === 3 && spellingCorrections.length === 0 && grammarCorrections.length === 0) {
+                praiseText.className = "p-4 rounded-2xl font-bold text-sm bg-green-100 text-green-900 border-2 border-green-500 flex items-center gap-3";
+                praiseText.innerHTML = `<i class="fa-solid fa-circle-check text-green-600 text-2xl shrink-0"></i> <span>${resultPraise}</span>`;
+            } else {
+                praiseText.className = "p-4 rounded-2xl font-bold text-sm bg-amber-100 text-amber-900 border-2 border-amber-500 flex items-center gap-3";
+                praiseText.innerHTML = `<i class="fa-solid fa-pen-to-square text-amber-600 text-2xl shrink-0"></i> <span>${resultPraise}</span>`;
+            }
+
+            let correctionHTML = '';
+            if (spellingCorrections.length > 0) {
+                correctionHTML += `
+                    <div class="bg-red-50 border-2 border-red-300 p-3.5 rounded-2xl text-red-950 shadow-sm">
+                        <div class="font-bold text-xs uppercase tracking-wider text-red-700 mb-1 flex items-center gap-2">
+                            <i class="fa-solid fa-spell-check"></i> Spelling Fixes
+                        </div>
+                        <ul class="list-disc list-inside text-xs sm:text-sm font-semibold space-y-1">
+                            ${spellingCorrections.map(item => `<li>${item}</li>`).join('')}
+                        </ul>
+                    </div>
+                `;
+            }
+
+            if (grammarCorrections.length > 0) {
+                correctionHTML += `
+                    <div class="bg-purple-50 border-2 border-purple-300 p-3.5 rounded-2xl text-purple-950 shadow-sm">
+                        <div class="font-bold text-xs uppercase tracking-wider text-purple-700 mb-1 flex items-center gap-2">
+                            <i class="fa-solid fa-wand-magic-sparkles"></i> Grammar & Mechanics
+                        </div>
+                        <ul class="list-disc list-inside text-xs sm:text-sm font-semibold space-y-1">
+                            ${grammarCorrections.map(item => `<li>${item}</li>`).join('')}
+                        </ul>
+                    </div>
+                `;
+            }
+
+            if (contentTips.length > 0) {
+                correctionHTML += `
+                    <div class="bg-yellow-50 border-2 border-yellow-300 p-3.5 rounded-2xl text-yellow-950 shadow-sm">
+                        <div class="font-bold text-xs uppercase tracking-wider text-yellow-800 mb-1 flex items-center gap-2">
+                            <i class="fa-solid fa-lightbulb"></i> How to Improve Your Answer
+                        </div>
+                        <ul class="list-disc list-inside text-xs sm:text-sm font-semibold space-y-1">
+                            ${contentTips.map(item => `<li>${item}</li>`).join('')}
+                        </ul>
+                    </div>
+                `;
+            }
+
+            if (correctionHTML) {
+                correctionBox.innerHTML = correctionHTML;
+                correctionBox.classList.remove('hidden');
+            } else {
+                correctionBox.classList.add('hidden');
+            }
+            
+            state.answers.m5 = text;
+            saveScore('m5', resultScore);
+        }
+
+        // ================= MISSION 6 =================
+        let m6Stream = null;
+        let m6Recorder = null;
+        let m6Chunks = [];
+        let m6SongAudio = null;
+
+        function renderM6(container) {
+            container.innerHTML = `
+                <div class="wonka-sheet p-6 text-black flex flex-col items-center">
+                    <div class="flex items-center gap-2 mb-4 pb-2 border-b-2 border-yellow-300 w-full justify-center">
+                        <span class="text-3xl">🎶</span>
+                        <h4 class="font-extrabold text-2xl text-purple-900">Charlie's Song Studio</h4>
+                    </div>
+                    
+                    <div class="bg-gradient-to-br from-amber-50 to-yellow-100 p-6 rounded-2xl border-2 border-yellow-400 w-full text-center font-fun text-base sm:text-lg leading-relaxed mb-6 shadow-inner text-purple-950">
+                        "Charlie and his family<br>
+                        Didn't have lots of money,<br>
+                        But he found a Golden Ticket,<br>
+                        And he went to the chocolate factory!<br><br>
+                        <span class="font-bold text-purple-700 not-italic bg-amber-200/60 px-3 py-1 rounded-xl border border-amber-300 inline-block my-1">Charlie, Charlie, what did you see<br>
+                        In Mr. Wonka's factory?<br>
+                        Charlie, Charlie, what did you do<br>
+                        When Mr. Wonka gave the factory to you?</span><br><br>
+                        The other children were naughty—<br>
+                        Violet, Augustus, Veruca, and Mike.<br>
+                        Mr. Wonka did not like them.<br>
+                        Charlie was the one he liked!"
+                    </div>
+
+                    <div class="flex flex-wrap justify-center gap-4 w-full">
+                        <button id="m6-btn-listen" onclick="m6Listen()" class="candy-btn flex-1 py-3.5 bg-blue-500 hover:bg-blue-600 text-white rounded-2xl font-black text-base shadow-lg transition flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-headphones text-lg"></i> Listen Aloud
+                        </button>
+                        <button id="m6-btn-rec" onclick="m6Record()" class="candy-btn flex-1 py-3.5 bg-rose-500 hover:bg-rose-600 text-white rounded-2xl font-black text-base shadow-lg transition flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-microphone text-lg"></i> Start Recording
+                        </button>
+                        <button id="m6-btn-stop" onclick="m6StopRec()" class="candy-btn flex-1 py-3.5 bg-slate-700 text-white rounded-2xl font-black text-base shadow-lg transition hidden flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-stop text-lg"></i> Stop Recording
+                        </button>
+                    </div>
+
+                    <div id="m6-audio-container" class="mt-6 w-full hidden flex flex-col items-center bg-green-50 p-4 rounded-2xl border-2 border-green-400">
+                        <p class="text-base font-extrabold text-green-700 mb-2 flex items-center gap-2">
+                            <i class="fa-solid fa-circle-check text-xl"></i> Great job! You earned 1 point.
+                        </p>
+                        <audio id="m6-player" controls class="w-full max-w-sm"></audio>
+                    </div>
+                </div>
+            `;
+        }
+
+        function m6Listen() {
+            playClick();
+            const btn = document.getElementById('m6-btn-listen');
+            const bgm = document.getElementById('bg-music');
+            
+            if (!m6SongAudio) {
+                m6SongAudio = new Audio('song.mp3');
+                m6SongAudio.onended = () => {
+                    if (btn) btn.innerHTML = `<i class="fa-solid fa-headphones text-lg"></i> Listen Aloud`;
+                    // Resume background music when the song finishes
+                    if (bgm && !state.isMuted) bgm.play().catch(e => console.log(e));
+                };
+            }
+
+            if (m6SongAudio.paused) {
+                // Pause background music before starting the song
+                if (bgm) bgm.pause();
+                
+                m6SongAudio.play().then(() => {
+                    if (btn) btn.innerHTML = `<i class="fa-solid fa-pause text-lg"></i> Pause Song`;
+                }).catch(err => {
+                    showWarning("Could not play 'song.mp3'. Please ensure 'song.mp3' is saved in the same folder as this HTML file.");
+                    if (btn) btn.innerHTML = `<i class="fa-solid fa-headphones text-lg"></i> Listen Aloud`;
+                    // Resume background music if the song fails to play
+                    if (bgm && !state.isMuted) bgm.play().catch(e => console.log(e));
+                });
+            } else {
+                m6SongAudio.pause();
+                if (btn) btn.innerHTML = `<i class="fa-solid fa-headphones text-lg"></i> Listen Aloud`;
+                // Resume background music when the song is manually paused
+                if (bgm && !state.isMuted) bgm.play().catch(e => console.log(e));
+            }
+        }
+
+        async function m6Record() {
+            if (state.completed.m6) return;
+            playClick();
+            try {
+                m6Stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                m6Recorder = new MediaRecorder(m6Stream);
+                m6Chunks = [];
+                
+                m6Recorder.ondataavailable = e => m6Chunks.push(e.data);
+                m6Recorder.onstop = () => {
+                    // Save blob for the final submit
+                    state.audioBlob = new Blob(m6Chunks, { type: 'audio/webm' });
+                    
+                    const url = URL.createObjectURL(state.audioBlob);
+                    document.getElementById('m6-player').src = url;
+                    document.getElementById('m6-audio-container').classList.remove('hidden');
+                    saveScore('m6', 1);
+                };
+
+                m6Recorder.start();
+                document.getElementById('m6-btn-rec').classList.add('hidden');
+                document.getElementById('m6-btn-stop').classList.remove('hidden');
+                document.getElementById('m6-btn-stop').classList.add('animate-pulse', 'bg-rose-800');
+            } catch(e) {
+                showWarning("Microphone access denied or not available.");
+            }
+        }
+
+        function m6StopRec() {
+            playClick();
+            if(m6Recorder && m6Recorder.state === "recording") {
+                m6Recorder.stop();
+                m6Stream.getTracks().forEach(track => track.stop());
+                
+                document.getElementById('m6-btn-stop').classList.add('hidden');
+                document.getElementById('m6-btn-rec').classList.remove('hidden');
+                document.getElementById('m6-btn-rec').innerText = "Record Again";
+            }
+        }
+
+        /* =========================================
+           HELPERS
+           ========================================= */
+        function saveScore(missionId, score) {
+            if (score > 0) playSuccess();
+            else playError();
+            
+            state.scores[missionId] = score;
+            state.completed[missionId] = true;
+            updateTotalScore();
+            
+            const container = document.getElementById(`container-${missionId}`);
+            const mData = missionsData.find(m => m.id === missionId);
+            
+            const submitBtn = container.querySelector('.submit-btn');
+            if (submitBtn) {
+                submitBtn.innerHTML = `<i class="fa-solid fa-check"></i> Mission Completed! Score: ${score} / ${mData.max}`;
+                submitBtn.className = "submit-btn w-full py-4 bg-gray-500 text-white font-bold text-xl rounded-2xl shadow-inner cursor-not-allowed mt-4";
+                submitBtn.disabled = true;
+                submitBtn.onclick = null;
+            }
+
+            const inputs = container.querySelectorAll('input, select, textarea');
+            inputs.forEach(inp => {
+                inp.disabled = true;
+                inp.classList.add('opacity-80', 'cursor-not-allowed');
+            });
+
+            if (missionId === 'm1') {
+                const dragItems = container.querySelectorAll('[draggable]');
+                dragItems.forEach(el => {
+                    el.setAttribute('draggable', 'false');
+                    el.classList.remove('cursor-grab', 'active:cursor-grabbing');
+                    el.classList.add('cursor-not-allowed');
+                });
+                const resetBtn = container.querySelector('button[onclick="m1Clear()"]');
+                if (resetBtn) resetBtn.style.display = 'none';
+            }
+            
+            if (missionId === 'm4') {
+                const dragItems = container.querySelectorAll('.m4-card[draggable]');
+                dragItems.forEach(el => {
+                    el.setAttribute('draggable', 'false');
+                    el.classList.remove('cursor-grab', 'active:cursor-grabbing', 'hover:scale-[1.01]');
+                    el.classList.add('cursor-not-allowed');
+                });
+            }
+            
+            if (missionId === 'm6') {
+                const recBtn = document.getElementById('m6-btn-rec');
+                if(recBtn) recBtn.style.display = 'none';
+            }
+        }
+
+        window.onload = () => {
+            initThreeJS();
+            fetchInitialData();
+        };
+    </script>
+    <audio id="bg-music" src="music.mp3" loop preload="auto"></audio>
+</body>
+</html>
